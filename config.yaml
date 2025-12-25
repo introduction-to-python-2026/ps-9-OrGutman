@@ -1,10 +1,6 @@
-#path: "path_to_model.joblib
-#features: ['feature_A', 'feature_B']
 path: "parkinsons_model.joblib"
 features: ['MDVP:Fo(Hz)', 'HNR']
 target: "status"
-test_size: 0.2
-random_state: 42
 scaler_min: 0
 scaler_max: 1
-
+random_state: 42
