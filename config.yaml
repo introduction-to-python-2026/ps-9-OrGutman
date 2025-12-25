@@ -7,3 +7,4 @@ test_size: 0.2
 random_state: 42
 scaler_min: 0
 scaler_max: 1
+
