@@ -1,38 +1,42 @@
-
-# Download the data from your GitHub repository
-!wget https://raw.githubusercontent.com/yotam-biu/ps9/main/parkinsons.csv -O /content/parkinsons.csv
-!wget https://raw.githubusercontent.com/yotam-biu/python_utils/main/lab_setup_do_not_edit.py -O /content/lab_setup_do_not_edit.py
-import lab_setup_do_not_edit
 import yaml
 import pandas as pd
-df = pd.read_csv("parkinsons.csv")
-df.head()
-df = df.dropna()
-
-import seaborn as sns
-sns.pairplot(df, hue="status")
-X = df[["MDVP:Fo(Hz)", "HNR"]]
-y = df["status"]
-scaler = MinMaxScaler()
-X_scaled = scaler.fit_transform(X)
-X_scaled = pd.DataFrame(X_scaled, columns=X.columns)
-X_scaled.head(), y.head()
-
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.linear_model import LogisticRegression
+import joblib
+from sklearn.metrics import accuracy_score
+
+# Load configuration
+with open("config.yaml", "r") as file:
+    config = yaml.safe_load(file)
+
+# Load dataset
+df = pd.read_csv("parkinsons.csv")
+
+# Select features and target
+X = df[config['features']]
+y = df[config['target']]
+
+# Scale features
+scaler = MinMaxScaler(feature_range=(config['scaler_min'], config['scaler_max']))
+X_scaled = scaler.fit_transform(X)
+
+# Split data
 X_train, X_val, y_train, y_val = train_test_split(
-    X_scaled, y, test_size=0.2, random_state=42, stratify=y
+    X_scaled, y,
+    test_size=config['test_size'],
+    random_state=config['random_state'],
+    stratify=y
 )
 
-X_train.shape, X_val.shape, y_train.shape, y_val.shape
-
-from sklearn.linear_model import LogisticRegression
-model = LogisticRegression(random_state=42)
-
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
-model = LogisticRegression(random_state=42)
+# Train model
+model = LogisticRegression(random_state=config['random_state'])
 model.fit(X_train, y_train)
+
+# Save trained model
+joblib.dump(model, config['path'])
+
+# Optional: test accuracy (can keep for your own checking)
 y_pred = model.predict(X_val)
 accuracy = accuracy_score(y_val, y_pred)
 print(f"Validation Accuracy: {accuracy:.2f}")
-
